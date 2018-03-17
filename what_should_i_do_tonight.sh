@@ -18,7 +18,7 @@ ALLOW_DUPE=0  # Set to 1 to add duplicate lines (and skew the odds)
 
 USE_META=1  # Set this to 0 to remove the meta effects
 
-IN_ORDER=0  # Set to 1 to force usage of 'start' and 'end'.
+IN_ORDER=1  # Set to 1 to force usage of 'start' and 'end'.
 # Otherwise order is random in addition to constants.
 
 NUM_OUTPUT=1  # Only print out one humorous line
@@ -35,8 +35,8 @@ fi
 ## CONSTANTS ##
 
 REL_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
-START_FILE="start"
-END_FILE="end"
+FIRST="first"
+LAST="last"
 DATA_DIR="data"
 
 DATA="$REL_PATH/$DATA_DIR"
@@ -66,17 +66,17 @@ function get_rand () {
 }
 
 function get_file () {
-	local FILE=""
+	FILE=""
 
-	while [ ! -f "$FILE" ] ; do
+	while [ ! -f "$DATA/$FILE" ] ; do
 		local INDEX="$(get_rand "$NUM_FILES")"
-		local FILE="$(ls -1 $DATA | head -n "$INDEX" | tail -n 1 )"
+		local  FILE="$DATA/$(ls -1 "$DATA" | head -n "$INDEX" | tail -n 1 )"
 	done
 	echo "$FILE"
 }
 
 function get_line () {
-	local FILE="$DATA/$1"
+	local FILE="$1"
 
 	local WORDS="$(cat "$FILE" | grep -v "^\s*#")"
 	if [ "$ALLOW_DUPE" -eq "0" ] ; then
@@ -100,23 +100,32 @@ function append () {
 ## CODE ##
 
 function main () {
-	NUM_OUTPUT=0
-	STRING=""
+	local NUM_OUTPUT=0
+	local STR=""
 
 	if (( "$IN_ORDER" )) ; then
-		STRING="$(append "$STRING" "$(get_line "$(get_line "$REL_PATH/$START")")")"
+		FIRST_FILE="$DATA/$(get_line "$REL_PATH/$FIRST")"
+		STR="$(append "$STR" "$(get_line "$FIRST_FILE")")"
 		NUM_OUTPUT="$(increment $NUM_OUTPUT)"
 	fi
 
 	while [ "$NUM_OUTPUT" -lt "$NUM_THINGS" ] ; do
 		if (( "$NUM_OUTPUT" )) ; then
-			STRING="$(append "$STRING" " and " )"
+			STR="$(append "$STR" " and " )"
 		fi
-		if [ "$NUM_OUTPUT" -eq "$(($NUM_THINGS - 1))" ] ; then
 
-			echo "$(get_line $(get_file)) and $(get_line $(get_file))"
+		if [ "$NUM_OUTPUT" -eq "$(($NUM_THINGS - 1))" ] && (( "$IN_ORDER" )) ; then
+			LAST_FILE="$DATA/$(get_line "$REL_PATH/$LAST")"
+			STR="$(append "$STR" "$(get_line "$LAST_FILE")")"
+			echo "$STR"
+			return
+		else
+			STR="$(append "$STR" "$(get_line "$(get_file)")")"
+			NUM_OUTPUT="$(increment $NUM_OUTPUT)"
 		fi
 	done
+
+	echo "$STR"
 }
 
 I=0
