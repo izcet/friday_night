@@ -16,7 +16,7 @@ NUM_THINGS=2  # Increase this to have longer sentences
 
 ALLOW_DUPE=0  # Set to 1 to add duplicate lines (and skew the odds)
 
-USE_META=1  # Set this to 0 to remove the meta effects
+NO_META=0  # Set this to 1 to remove the meta effects
 
 IN_ORDER=1  # Set to 1 to force usage of 'start' and 'end'.
 # Otherwise order is random in addition to constants.
@@ -38,6 +38,7 @@ REL_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 FIRST="first"
 LAST="last"
 DATA_DIR="data"
+META_FILE="meta"
 
 DATA="$REL_PATH/$DATA_DIR"
 NUM_FILES="$(ls -1 $DATA | wc -l)"
@@ -60,17 +61,23 @@ function increment () {
 }
 
 function get_rand () {
-	RAND="$(($RANDOM % $1))"
+	#RAND="$(($RANDOM % $1))"
+	
+	RAND="$(($(openssl rand 2 | od -DAn | tr -d '[:space:]') % $1))"
 	RAND="$(increment $RAND)"
 	echo "$RAND"
 }
 
 function get_file () {
-	FILE=""
+	local FILE=""
 
 	while [ ! -f "$DATA/$FILE" ] ; do
 		local INDEX="$(get_rand "$NUM_FILES")"
-		local  FILE="$DATA/$(ls -1 "$DATA" | head -n "$INDEX" | tail -n 1 )"
+		local FILE="$(ls -1 "$DATA" | head -n "$INDEX" | tail -n 1 )"
+
+		if (( "$NO_META" )) && [ "$FILE" == "$META_FILE" ] ; then
+			local FILE=""
+		fi
 	done
 	echo "$FILE"
 }
@@ -102,6 +109,7 @@ function append () {
 function main () {
 	local NUM_OUTPUT=0
 	local STR=""
+	local DUP_FLAG=0
 
 	if (( "$IN_ORDER" )) ; then
 		FIRST_FILE="$DATA/$(get_line "$REL_PATH/$FIRST")"
@@ -110,18 +118,55 @@ function main () {
 	fi
 
 	while [ "$NUM_OUTPUT" -lt "$NUM_THINGS" ] ; do
+
 		if (( "$NUM_OUTPUT" )) ; then
 			STR="$(append "$STR" " and " )"
 		fi
+
+		NEXT_FILE="$DATA/$(get_file)"
+		NEXT_LINE="$(get_line "$NEXT_FILE")"
+
+		while [ "$NEXT_FILE" == "$DATA/$META_FILE" ] ; do
+			case "$NEXT_LINE" in
+				"end")
+					STR="$(append "$STR" "nothing")"
+					if (( "$NUM_OUTPUT" )) ; then
+						STR="$(append "$STR" " else")"
+					fi
+					echo "$STR"
+					return 
+					;;
+				"and")
+					NUM_THINGS="$(increment "$NUM_THINGS")"
+					;;
+				"not")
+					STR="$(append "$STR" "not ")"
+					;;
+				"dup")
+					DUP_FLAG=1
+					;;
+				*)
+					echo "{ERR: $NEXT_LINE is not valid in $META_FILE}"
+					return
+					;;
+			esac
+			NEXT_FILE="$DATA/$(get_file)"
+			NEXT_LINE="$(get_line "$NEXT_FILE")"
+		done
 
 		if [ "$NUM_OUTPUT" -eq "$(($NUM_THINGS - 1))" ] && (( "$IN_ORDER" )) ; then
 			LAST_FILE="$DATA/$(get_line "$REL_PATH/$LAST")"
 			STR="$(append "$STR" "$(get_line "$LAST_FILE")")"
 			echo "$STR"
 			return
-		else
-			STR="$(append "$STR" "$(get_line "$(get_file)")")"
-			NUM_OUTPUT="$(increment $NUM_OUTPUT)"
+		fi
+
+		STR="$(append "$STR" "$NEXT_LINE")"
+		NUM_OUTPUT="$(increment "$NUM_OUTPUT")"
+
+		if (( "$DUP_FLAG" )) && [ "$NUM_OUTPUT" -lt "$(($NUM_THINGS - 1))" ] ; then
+			STR="$(append "$STR and " "$NEXT_LINE")"
+			NUM_OUTPUT="$(increment "$NUM_OUTPUT")"
 		fi
 	done
 
