@@ -150,9 +150,11 @@ function main () {
 	echo "$STR"
 }
 
+NUM_TOTAL="$NUM_THINGS"
 I=0
 while [ "$I" -lt "$NUM_OUTPUT" ] ; do
 	main
+	NUM_THINGS="$NUM_TOTAL"
 	I=$(($I + 1))
 done
 
