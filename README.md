@@ -3,7 +3,7 @@ A bash script that generates random activities for a friday night. Inspired by:
 
 ![screenshot](assets/screenshot.png?raw=true "This is a Screenshot. There are many like it, but this one is mine.")
 
-#### Usage:
+### Usage:
 
 ```
 $> chmod +x what_should_i_do_tonight.sh
@@ -14,9 +14,9 @@ If one suggestion isn't enough, you can spice it up with the "bulk" feature:
 $> ./what_should_i_do_tonight.sh bulk
 ```
 
-#### Other Features:
- - *Cryptographically Secure*
- - *Controlled source*: all of the suggestions are stored in `data/`.
+### Other Features:
+ - **Cryptographically Secure**
+ - **Controlled source**: all of the suggestions are stored in `data/`.
      - You can add a new suggestion category by creating a new file in this directory.
 	 - You can remove suggestion categories by removing the file (`rm file`) or simply hiding it (`mv file .file`).
 	 - You can add suggestions by adding more entries to the category files.
@@ -26,7 +26,7 @@ $> ./what_should_i_do_tonight.sh bulk
 	 - You can restrict the opener and closer by enabling `IN_ORDER` in `config`.
 	 This causes the program to source the files `first` and `last`.
 	 (If you look at their contents you'll pretty quickly figure out how they work)
- - *Meta Functions*: if by random chance, the file `meta` is selected as the category, it doesn't produce a selection but instead modifies the existing selections.
+ - **Meta Functions**: if by random chance, the file `meta` is selected as the category, it doesn't produce a selection but instead modifies the existing selections.
      - You can disable this by setting `NO_META` in `config`
      - `end`: Immediately terminate the suggestion with `.. and nothing else` (or simply `nothing` if it's the first). 
 	 This will sometimes conflict with the the `last` entry if you're using `IN_ORDER`.
