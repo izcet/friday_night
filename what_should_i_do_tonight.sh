@@ -2,50 +2,21 @@
 
 # Author: Isaac Rhett <isaacjrhett@gmail.com>
 ################################################################################
-## USER VARIABLES ##
 
-# Remove or set a file hidden to exclude it from the list
-#   active_file
-#   .deactivated
-
-# Comment out a line of a file to exclude a specific entry
-#   activity1
-#   #activity2
-
-NUM_THINGS=2  # Increase this to have longer sentences
-
-ALLOW_DUPE=0  # Set to 1 to add duplicate lines (and skew the odds)
-
-NO_META=0  # Set this to 1 to remove the meta effects
-
-IN_ORDER=1  # Set to 1 to force usage of 'start' and 'end'.
-# Otherwise order is random in addition to constants.
-
-NUM_OUTPUT=1  # Only print out one humorous line
-
-# But if you so choose, use the "bulk parameter"
-if [ "$1" == "bulk" ] ; then
-
-	# You're going to have a lot of options
-	NUM_OUTPUT=10
+CONFIG="config"
+if [ -f "$CONFIG" ] ; then
+	source "$CONFIG"
+else
+	echo "Error: no config file located"
 fi
 
-
-################################################################################
-## CONSTANTS ##
+if [ "$1" == "bulk" ] ; then
+	NUM_OUTPUT=$BULK_OUTPUT
+fi
 
 REL_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
-FIRST="first"
-LAST="last"
-DATA_DIR="data"
-META_FILE="meta"
-
 DATA="$REL_PATH/$DATA_DIR"
 NUM_FILES="$(ls -1 $DATA | wc -l)"
-
-
-################################################################################
-## ERROR CHECKS ##
 
 if [ "$NUM_FILES" -eq "0" ] ; then
 	echo "Error: no data files in '$DATA'"
@@ -110,6 +81,7 @@ function main () {
 	local NUM_OUTPUT=0
 	local STR=""
 	local DUP_FLAG=0
+	local NOT_FLAG=0
 
 	if (( "$IN_ORDER" )) ; then
 		FIRST_FILE="$DATA/$(get_line "$REL_PATH/$FIRST")"
@@ -140,7 +112,7 @@ function main () {
 					NUM_THINGS="$(increment "$NUM_THINGS")"
 					;;
 				"not")
-					STR="$(append "$STR" "not ")"
+					NOT_FLAG=1
 					;;
 				"dup")
 					DUP_FLAG=1
@@ -153,6 +125,10 @@ function main () {
 			NEXT_FILE="$DATA/$(get_file)"
 			NEXT_LINE="$(get_line "$NEXT_FILE")"
 		done
+		if (( "$NOT_FLAG" )) ; then
+			STR="$(append "$STR" "not ")"
+			NOT_FLAG=0
+		fi
 
 		if [ "$NUM_OUTPUT" -eq "$(($NUM_THINGS - 1))" ] && (( "$IN_ORDER" )) ; then
 			LAST_FILE="$DATA/$(get_line "$REL_PATH/$LAST")"
@@ -167,6 +143,7 @@ function main () {
 		if (( "$DUP_FLAG" )) && [ "$NUM_OUTPUT" -lt "$(($NUM_THINGS - 1))" ] ; then
 			STR="$(append "$STR and " "$NEXT_LINE")"
 			NUM_OUTPUT="$(increment "$NUM_OUTPUT")"
+			DUP_FLAG=0
 		fi
 	done
 
