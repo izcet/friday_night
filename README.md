@@ -1,5 +1,5 @@
 # friday night suggestion generator
-A bash script that generates random activities for a friday night. Inspired by:
+A bash script that generates random activities for a Friday night. Inspired by:
 
 ![screenshot](assets/screenshot.png?raw=true "This is a Screenshot. There are many like it, but this one is mine.")
 
@@ -15,7 +15,7 @@ $> ./what_should_i_do_tonight.sh bulk
 ```
 
 ## Other Features:
- - **Cryptographically Secure**
+ - **Cryptographically Secure Randomness**: To make sure the generated ideas are completely unique.
  - **Controlled source**: all of the suggestions are stored in `data/`.
      - You can add a new suggestion category by creating a new file in this directory.
 	 - You can remove suggestion categories by removing the file (`rm file`) or simply hiding it (`mv file .file`).
