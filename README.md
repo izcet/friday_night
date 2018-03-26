@@ -30,7 +30,7 @@ $> ./what_should_i_do_tonight.sh bulk
      - You can disable this by setting `NO_META` in `config`
      - `end`: Immediately terminate the suggestion with `.. and nothing else` (or simply `nothing` if it's the first). 
 	 This will sometimes conflict with the the `last` entry if you're using `IN_ORDER`.
-	 This is not a bug, but a feature. Deal with it ¯\_(ツ)_/¯
+	 This is not a bug, but a feature. Deal with it ¯\\\_(ツ)_/¯
 	 - `and`: Add another entry to the list.
 	 This will sometimes trigger several times (and is more likely to trigger the more often it triggers) and you will periodically get ridiculously long suggestions.
 	 - `not`: Simply puts `not` in front of the next suggestion.
